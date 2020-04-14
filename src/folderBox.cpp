@@ -28,7 +28,6 @@ using namespace NS_FOLDERBOX;
 *
 --------------------------------------------------------------------------------------------------------------------
 */
-
 /**
  *	@brief	    Init folderBox
  *	@param[in]  folderPath	- folder path which to be monitored
@@ -40,7 +39,7 @@ using namespace NS_FOLDERBOX;
  *	@note		The function work only if param 'folderPath' is a directory
  **/
 folderBox::folderBox( const char *folderPath, int subLevel )
-{ 
+{
 	if ( -1 == (queue_fd=inotify_init()) ) { throw(errno); exit(-1); } 
 
 	watch_fd = inotify_add_watch( queue_fd, folderPath, IN_CREATE|IN_DELETE|IN_MOVED_FROM|IN_MOVED_TO );
@@ -48,6 +47,31 @@ folderBox::folderBox( const char *folderPath, int subLevel )
 	if ( -1 == watch_fd ) { throw(errno); exit(-1); }
 
 	this->buffer = new char[ FOLDERBOX_POLLER_BUFFER_SIZE ];
+
+	return;
+}
+
+/**
+ *	@brief	    Init folderBox
+ *	@param[in]  folderPath	- folder path which to be monitored
+ *	@param[in]  subLevel	- -1 : Monitor all sub directory recursively 
+ *							-  0 : Do not monitor sub directory
+ *							- >0 : Monitor N level of sub directory 
+ *	@param[out] None
+ *	@return		None	
+ *	@note		The function work only if param 'folderPath' is a directory
+ **/
+void folderBox::init( const char *folderPath, int subLevel )
+{
+	if ( -1 == (queue_fd=inotify_init()) ) { throw(errno); exit(-1); } 
+
+	watch_fd = inotify_add_watch( queue_fd, folderPath, IN_CREATE|IN_DELETE|IN_MOVED_FROM|IN_MOVED_TO );
+
+	if ( -1 == watch_fd ) { throw(errno); exit(-1); }
+
+	this->buffer = new char[ FOLDERBOX_POLLER_BUFFER_SIZE ];
+
+	return;
 }
 
 /**
@@ -58,7 +82,7 @@ folderBox::folderBox( const char *folderPath, int subLevel )
  *	@return		None	
  *	@note		The function perform a block style
  **/
-void folderBox::Poller( pvFun Add, pvFun Del )
+void folderBox::Poll( pvFun Add, pvFun Del )
 {
 	const struct	inotify_event *event;
 	struct			pollfd fds = { .fd = queue_fd, .events = POLLIN };
@@ -101,5 +125,4 @@ void folderBox::Poller( pvFun Add, pvFun Del )
 
 	return;
 }
-
 

@@ -50,7 +50,11 @@ class folderBox{
 		folderBox( const char *folderPath, int subLevel=0 );
 		~folderBox() { inotify_rm_watch(queue_fd, watch_fd); close(queue_fd); delete [] buffer; }
 
-		void Poller( pvFun Add, pvFun Del );
+		void Poll( pvFun Add, pvFun Del );
+
+	protected:
+		folderBox(){};
+		void init( const char *folderPath, int subLevel=0 );
 
 	private:
 		int			queue_fd;
