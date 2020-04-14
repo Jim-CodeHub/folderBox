@@ -6,12 +6,14 @@
 
 TARGET		    =   folderBox
 PROJECT			=   lib$(TARGET)
+VERSION			=	0.1
 
 CXX				=	g++
 
 CXXFLAGS		=	-Werror -std=c++11
 CXXFLAGS       += 	-Wall
 CXXFLAGS	   +=   -I$(CURDIR)/src
+CXXFLAGS	   +=	-I$(CURDIR)/src/util
 #CXXFLAGS		+=  -g
 
 OBJS		    = 	src/folderBox.o
@@ -26,7 +28,8 @@ OBJS		    = 	src/folderBox.o
 
 all:$(OBJS)
 	ar -rcs $(PROJECT).a $(shell find ./src -name "*.o")
-	$(CXX) -fPIC -shared $(CXXFLAGS) $(shell find ./src -name "*.cpp") -o $(PROJECT).so
+	$(CXX) -fPIC -shared $(CXXFLAGS) $(shell find ./src -name "*.cpp") -o $(PROJECT).so.$(VERSION)
+	ln -s $(PROJECT).so.$(VERSION) $(PROJECT).so
 
 %.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c $^ -o $@

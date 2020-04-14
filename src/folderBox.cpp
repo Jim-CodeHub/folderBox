@@ -29,75 +29,77 @@ using namespace NS_FOLDERBOX;
 --------------------------------------------------------------------------------------------------------------------
 */
 
-#include <iostream>
-using namespace std;
-
 /**
  *	@brief	    Init folderBox
  *	@param[in]  folderPath	- folder path which to be monitored
+ *	@param[in]  subLevel	- -1 : Monitor all sub directory recursively 
+ *							-  0 : Do not monitor sub directory
+ *							- >0 : Monitor N level of sub directory 
  *	@param[out] None
  *	@return		None	
  *	@note		The function work only if param 'folderPath' is a directory
  **/
-folderBox::folderBox( const char *folderPath )
+folderBox::folderBox( const char *folderPath, int subLevel )
 { 
 	if ( -1 == (queue_fd=inotify_init()) ) { throw(errno); exit(-1); } 
 
-	//watch_fd = inotify_add_watch( queue_fd, folderPath, IN_ONLYDIR|IN_ACCESS );
-	//watch_fd = inotify_add_watch( queue_fd, folderPath, IN_ALL_EVENTS);
-	//watch_fd = inotify_add_watch( queue_fd, folderPath, IN_MOVED_FROM);
-	//watch_fd = inotify_add_watch( queue_fd, folderPath, IN_MOVED_TO);
-	watch_fd = inotify_add_watch( queue_fd, folderPath, IN_CREATE);
+	watch_fd = inotify_add_watch( queue_fd, folderPath, IN_CREATE|IN_DELETE|IN_MOVED_FROM|IN_MOVED_TO );
 
 	if ( -1 == watch_fd ) { throw(errno); exit(-1); }
+
+	this->buffer = new char[ FOLDERBOX_POLLER_BUFFER_SIZE ];
 }
 
 /**
  *	@brief	    Start folderBox (monitor) 
- *	@param[in]  None 
+ *	@param[in]  Add		-	callback function for add event 
+ *	@param[in]  Del		-	callback function for delete event 
  *	@param[out] None
  *	@return		None	
  *	@note		The function perform a block style
  **/
-void folderBox::Poller( void )
+void folderBox::Poller( pvFun Add, pvFun Del )
 {
-	struct pollfd fds = { .fd = queue_fd, .events = POLLIN };
+	const struct	inotify_event *event;
+	struct			pollfd fds = { .fd = queue_fd, .events = POLLIN };
 
-	switch ( poll( &fds, 1, -1 ) )
+	while ( true )
 	{
-		case -1: /**< Error */
-			if ( EINTR != errno ) { throw(errno); exit(-1); }
-			break;
-		case 0 : /**< Nothing to be done. */ 
-			break;
-		default: /**< Get ev */
-			if ( fds.revents & POLLIN ) /**< Inotify events are available. */
-			{
-				char buff[4096];
-
-				const struct inotify_event *event;
-
-				int len;
-
-				while ( len=read(queue_fd, buff, sizeof(buff)), ((len > 0) || (-1 == len)) )
+		switch ( poll( &fds, 1, -1 ) )
+		{
+			case -1: /**< Error */
+				if ( EINTR != errno ) { throw(errno); exit(-1); }
+				break;
+			case 0 : /**< Nothing to be done. */ 
+				break;
+			default: /**< Get ev */
+				if ( fds.revents & POLLIN ) /**< Inotify events are available. */
 				{
+					int len = read( queue_fd, this->buffer, FOLDERBOX_POLLER_BUFFER_SIZE );
+
 					if ( (-1 == len) && (EAGAIN != errno) ) { throw(errno); exit(-1); }
 
-					/* Loop over all events in the buffer */
-					for ( char *ptr = buff; ptr < buff + len; ptr += sizeof(struct inotify_event) + event->len )
+					if ( !(len <= 0) )
 					{
-						event = (const struct inotify_event *) ptr;
+						event = (const struct inotify_event *) buffer;
 
-						if (event->mask & IN_ACCESS)
+						if ( (event->mask & IN_Q_OVERFLOW) || (event->mask & IN_UNMOUNT) ) { throw(errno); exit(-1); }
+
+						if ( (event->mask & IN_CREATE) || (event->mask & IN_MOVED_TO  ) )
 						{
-							cout << "access" <<endl;
+							if ( NULL != Add ) { Add(event->name, event->len); }
 						}
 
-						if (event->len)
-							cout << event->name << endl;
+						if ( (event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM) )
+						{
+							if ( NULL != Del ) { Del(event->name, event->len); }
+						}
 					}
 				}
-			}
+		}
 	}
+
+	return;
 }
+
 
