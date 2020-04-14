@@ -24,7 +24,7 @@ OBJS		    = 	src/folderBox.o
 #																									   #
 #-------------------------------------------------------------------------------------------------------
 
-.PHONY: all clean tags 
+.PHONY: all clean install tags 
 
 all:$(OBJS)
 	ar -rcs $(PROJECT).a $(shell find ./src -name "*.o")
@@ -33,6 +33,11 @@ all:$(OBJS)
 
 %.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c $^ -o $@
+
+install:
+	$(shell mkdir ./install)
+	@mv ./$(PROJECT).* ./install
+	$(shell cp `find ./ -name "*.hpp"` ./install)
 
 tags:
 	@rm -rf ./tags
@@ -46,5 +51,6 @@ tags:
 
 clean:
 	@rm -rf $(shell find ./ -name "*.o")
-	@rm -rf $(TARGET).*
+	@rm -rf $(TARGET).* $(PROJECT).*
+	@rm -rf install
 
