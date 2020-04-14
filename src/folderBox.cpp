@@ -82,7 +82,7 @@ void folderBox::init( const char *folderPath, int subLevel )
  *	@return		None	
  *	@note		The function perform a block style
  **/
-void folderBox::Poll( pvFun Add, pvFun Del )
+void folderBox::Poll( FB_CGI_T Add, FB_CGI_T Del )
 {
 	const struct	inotify_event *event;
 	struct			pollfd fds = { .fd = queue_fd, .events = POLLIN };

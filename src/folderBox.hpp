@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <poll.h>
+#include <functional>
 
 
 namespace NS_FOLDERBOX{
@@ -43,14 +44,14 @@ namespace NS_FOLDERBOX{
  *------------------------------------------------------------------------------------------------------------------
 */
 
-typedef void (*pvFun)(const void *val, size_t _size);
+typedef std::function<void(const void *val, size_t _size)> FB_CGI_T;
 
 class folderBox{
 	public:	
 		folderBox( const char *folderPath, int subLevel=0 );
 		~folderBox() { inotify_rm_watch(queue_fd, watch_fd); close(queue_fd); delete [] buffer; }
 
-		void Poll( pvFun Add, pvFun Del );
+		void Poll( FB_CGI_T Add, FB_CGI_T Del );
 
 	protected:
 		folderBox(){};
