@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------------------------------
 #																									   #
-#								Makefile for folderBox source file 									   #
+#								Makefile for syswatcher source file 									   #
 #																									   #
 #-------------------------------------------------------------------------------------------------------
 
-TARGET		    =   folderBox
+TARGET		    =   syswatcher
 PROJECT			=   lib$(TARGET)
 VERSION			=	0.1
 
@@ -16,7 +16,7 @@ CXXFLAGS	   +=   -I$(CURDIR)/src
 CXXFLAGS	   +=	-I$(CURDIR)/src/util
 #CXXFLAGS		+=  -g
 
-OBJS		    = 	src/folderBox.o
+OBJS		    = 	src/syswatcher.o
 
 #-------------------------------------------------------------------------------------------------------
 #																									   #

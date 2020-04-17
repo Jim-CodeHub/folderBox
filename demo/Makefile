@@ -13,7 +13,7 @@ CXXFLAGS       += 	-Wall
 CXXFLAGS	   +=   -I../src
 #CXXFLAGS		+=  -g
 
-OBJS		    = 	../src/folderBox.o
+OBJS		    = 	../src/syswatcher.o
 OBJS		   += 	./main.o
 
 #-------------------------------------------------------------------------------------------------------

@@ -1,40 +1,58 @@
 #include <iostream>
 #include <string.h>
-#include <folderBox.hpp>
+#include <syswatcher.hpp>
 
-using namespace NS_FOLDERBOX;
+using namespace NS_SYSWATCHER;
 using namespace std;
 
-void Add( const void *val, size_t _size )
+int wd[2];
+
+void evFun( struct _watched_src src )
 {
-	cout << "Add work" <<endl;
+	cout << "Callback function work" << endl;
 
-	cout << (char *)val << endl;
+	cout << src.pathname			 << endl; /**< Full path name. */
 
-	return;
-}
+	cout << src.mask_get			 << endl; /**< Occur events. */
 
-void Del( const void *val, size_t _size )
-{
-	cout << "Del work" <<endl;
+	cout << src.mask_reg			 << endl; /**< Regists events. */
 
-	cout << (char *)val << endl;
+	cout << src.watch_fd			 << endl; /**< Watched filedescriptor. */
 
-	return;
+	if ( wd[0] == src.watch_fd )
+	{
+		if ( src.mask_get & IN_CREATE		) { cout << "create    event on wd :"<< wd[0] << endl; }
+		if ( src.mask_get & IN_MOVED_TO		) { cout << "move to   event on wd :"<< wd[0] << endl; }
+	}
+
+	if ( wd[1] == src.watch_fd )
+	{
+		if ( src.mask_get & IN_DELETE		) { cout << "delete    event on wd :"<< wd[1] << endl; }
+		if ( src.mask_get & IN_MOVED_FROM	) { cout << "move from event on wd :"<< wd[1] << endl; }
+	}
+
+	//sleep(1);
 }
 
 int main( void )
 {
+	char *buff = new char[4096]; /**< Set enough size for events. */
+
 	try{
 
-		folderBox FB("./");
+		syswatcher sw;
 
-		FB.Poller( Add, Del );
+		wd[0] = sw.reg("./", IN_CREATE|IN_MOVED_TO);
+		wd[1] = sw.reg("..", IN_DELETE|IN_MOVED_FROM);
+
+		sw.poll( evFun, buff, 4096 );
 
 	} catch (int err) {
 
 		cout << strerror(err) <<endl;
 	}
+
+	delete [] buff;
 
 	return 0;
 }

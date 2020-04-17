@@ -1,19 +1,19 @@
 
 /**-----------------------------------------------------------------------------------------------------------------
- * @file	folderBox.hpp
+ * @file	syswatcher.hpp
  *
  * Copyright (c) 2020-2020 Jim Zhang 303683086@qq.com
  *------------------------------------------------------------------------------------------------------------------
 */
 
 
-#ifndef __FOLDERBOX_H__
-#define __FOLDERBOX_H__
+#ifndef __SYSWATCHER_H__
+#define __SYSWATCHER_H__
 
 
 /*------------------------------------------------------------------------------------------------------------------
  *
- *												FolderBox INCLUDES
+ *												SYSWATCHER INCLUDES
  *
  *------------------------------------------------------------------------------------------------------------------
 */
@@ -22,50 +22,65 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <poll.h>
 #include <functional>
+#include <vector>
+#include <list>
+#include <iostream>
 
 
-namespace NS_FOLDERBOX{
+using namespace std;
 
-/*------------------------------------------------------------------------------------------------------------------
- *
- *												FolderBox SHORTALIAS 
- *
- *------------------------------------------------------------------------------------------------------------------
-*/
-#define  FOLDERBOX_POLLER_BUFFER_SIZE		(sizeof(inotify_event) + 255)
+namespace NS_SYSWATCHER{
 
 
 /*------------------------------------------------------------------------------------------------------------------
  *
- *												FolderBox DATABLOCK 
+ *												SYSWATCHER SHORTALIAS 
+ *
+ *------------------------------------------------------------------------------------------------------------------
+*/
+#define  SYSWATCHER_POLLER_BUFFER_SIZE		(sizeof(inotify_event) + 255)
+
+
+/*------------------------------------------------------------------------------------------------------------------
+ *
+ *												SYSWATCHER DATABLOCK 
  *
  *------------------------------------------------------------------------------------------------------------------
 */
 
-typedef std::function<void(const void *val, size_t _size)> FB_CGI_T;
+struct _watched_src{
+	int			watch_fd; /**< watched filedescriptor. */
+	uint32_t	mask_reg; /**< watched events. */
+	uint32_t	mask_get; /**< get mask from read(). */
+	string		pathname; /**< regists pathname + name from read(). */
+};
 
-class folderBox{
+typedef std::function<void( const struct _watched_src &src )> FB_CGI_T;
+
+class syswatcher{
 	public:	
-		folderBox( const char *folderPath, int subLevel=0 );
-		~folderBox() { inotify_rm_watch(queue_fd, watch_fd); close(queue_fd); delete [] buffer; }
+		syswatcher( );
+		~syswatcher();
 
-		void Poll( FB_CGI_T Add, FB_CGI_T Del );
+		int	 reg ( const char *pathname, int mask			 );
+		void del ( const char *pathname, int wd				 );
+		void poll( FB_CGI_T evFun, char *buff, ssize_t _size );
 
-	protected:
-		folderBox(){};
-		void init( const char *folderPath, int subLevel=0 );
+		struct _reg_info{ /**< Regists info. */
+			int			watch_fd;
+			uint32_t	mask_reg;
+			string		pathname;
+		};
 
 	private:
-		int			queue_fd;
-		int			watch_fd;
-		char	   *buffer	; /**< Poller buffer for 'read()'. */
+		int						 queue_fd;
+		list<struct _reg_info *> resource;
 }; 
 
 
-} /**< NS_FOLDERBOX */
+} /**< NS_SYSWATCHER */
 
 
-#endif /*__FOLDERBOX_H__*/
+#endif /*__SYSWATCHER_H__*/
 
