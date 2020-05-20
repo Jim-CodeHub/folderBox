@@ -118,7 +118,6 @@ void syswatcher::del( const char *pathname, int wd )
  **/
 void syswatcher::poll( FB_CGI_T evFun, char *buff, ssize_t _size )
 {
-	const struct inotify_event				*pEvent;
 	struct _watched_src						 src;
 
 	while ( true ) 
@@ -127,9 +126,10 @@ void syswatcher::poll( FB_CGI_T evFun, char *buff, ssize_t _size )
 
 		if (-1 == len) { throw(errno); exit(-1); }
 
-		for ( char *ptr = buff; ptr < buff+len; ptr += (sizeof(struct inotify_event)+pEvent->len) ) 
+		int i = 0;
+		while ( i < len ) 
 		{
-			pEvent = (const struct inotify_event *) ptr;
+			struct inotify_event *pEvent = (struct inotify_event *)&buff[i];
 
 			if ( (pEvent->mask & IN_Q_OVERFLOW) || (pEvent->mask & IN_UNMOUNT) ) { throw(errno); exit(-1); }
 
@@ -155,6 +155,8 @@ void syswatcher::poll( FB_CGI_T evFun, char *buff, ssize_t _size )
 			}
 
 			evFun( src );
+
+			i += sizeof(struct inotify_event) + pEvent->len; 
 		}
 	}
 
