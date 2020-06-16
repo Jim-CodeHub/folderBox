@@ -12,11 +12,10 @@ CXX				=	g++
 
 CXXFLAGS		=	-Werror -std=c++11
 CXXFLAGS       += 	-Wall
-CXXFLAGS	   +=   -I$(CURDIR)/src
-CXXFLAGS	   +=	-I$(CURDIR)/src/util
+CXXFLAGS	   +=   -I$(CURDIR)
 #CXXFLAGS		+=  -g
 
-OBJS		    = 	src/syswatcher.o
+OBJS		    = 	$(TARGET)/syswatcher.o
 
 #-------------------------------------------------------------------------------------------------------
 #																									   #
@@ -27,8 +26,8 @@ OBJS		    = 	src/syswatcher.o
 .PHONY: all clean install tags 
 
 all:$(OBJS)
-	ar -rcs $(PROJECT).a $(shell find ./src -name "*.o")
-	$(CXX) -fPIC -shared $(CXXFLAGS) $(shell find ./src -name "*.cpp") -o $(PROJECT).so.$(VERSION)
+	ar -rcs $(PROJECT).a $(shell find ./$(TARGET) -name "*.o")
+	$(CXX) -fPIC -shared $(CXXFLAGS) $(shell find ./$(TARGET) -name "*.cpp") -o $(PROJECT).so.$(VERSION)
 	ln -s $(PROJECT).so.$(VERSION) $(PROJECT).so
 
 %.o:%.cpp

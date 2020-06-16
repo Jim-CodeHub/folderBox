@@ -6,7 +6,7 @@
  *------------------------------------------------------------------------------------------------------------------
 */
 
-#include <traverse.hpp>
+#include <syswatcher/util/traverse.hpp>
 
 using namespace NS_FOLDERBOX;
 

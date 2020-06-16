@@ -10,10 +10,10 @@ CXX				=	g++
 
 CXXFLAGS		=	-Werror -std=c++11
 CXXFLAGS       += 	-Wall
-CXXFLAGS	   +=   -I../src
+CXXFLAGS	   +=   -I../
 #CXXFLAGS		+=  -g
 
-OBJS		    = 	../src/syswatcher.o
+OBJS		    = 	../syswatcher/syswatcher.o
 OBJS		   += 	./main.o
 
 #-------------------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ OBJS		   += 	./main.o
 .PHONY: all clean tags 
 
 all:$(OBJS)
-	$(CXX) $(shell find ../src -name "*.o") main.o $(LDFLAGS) -o $(TARGET).out
+	$(CXX) $(shell find ../syswatcher -name "*.o") main.o $(LDFLAGS) -o $(TARGET).out
 
 %.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c $^ -o $@
